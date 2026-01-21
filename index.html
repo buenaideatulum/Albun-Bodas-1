@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álbum de Boda - Invitados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b border-pink-100">
+        <div class="max-w-4xl mx-auto px-4 py-6 text-center">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <svg class="text-pink-500" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <h1 class="text-3xl font-serif text-gray-800" id="coupleNames">María & Juan</h1>
+                <svg class="text-pink-500" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            </div>
+            <p class="text-gray-600" id="weddingDate">21 Enero 2026</p>
+            <p class="text-sm text-gray-500 mt-2">Comparte tus mejores momentos con nosotros</p>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Mensaje de éxito -->
+        <div id="successMessage" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 hidden">
+            <div class="flex items-center gap-3">
+                <svg class="text-green-600" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <p class="text-green-800 font-medium">¡Foto compartida con éxito!</p>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div id="actionButtons" class="grid grid-cols-2 gap-4 mb-8">
+            <button onclick="startCamera()" class="bg-pink-500 hover:bg-pink-600 text-white rounded-lg p-6 flex flex-col items-center gap-3 transition-colors shadow-md">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span class="font-medium">Tomar Foto</span>
+            </button>
+            
+            <button onclick="document.getElementById('fileInput').click()" class="bg-rose-500 hover:bg-rose-600 text-white rounded-lg p-6 flex flex-col items-center gap-3 transition-colors shadow-md">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="font-medium">Subir Foto</span>
+            </button>
+        </div>
+
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+
+        <!-- Cámara -->
+        <div id="cameraContainer" class="mb-8 bg-white rounded-lg shadow-lg overflow-hidden hidden">
+            <video id="video" autoplay playsinline class="w-full"></video>
+            <div class="p-4 flex gap-3">
+                <button onclick="capturePhoto()" id="captureBtn" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg py-3 font-medium transition-colors">
+                    Capturar
+                </button>
+                <button onclick="stopCamera()" class="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+
+        <canvas id="canvas" style="display: none;"></canvas>
+
+        <!-- Galería de fotos recientes -->
+        <div id="gallerySection" style="display: none;">
+            <h2 class="text-xl font-serif text-gray-800 mb-4">Momentos Compartidos</h2>
+            <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+            <p id="morePhotos" class="text-center text-gray-500 text-sm mt-4" style="display: none;"></p>
+        </div>
+
+        <div id="emptyState" class="text-center py-12">
+            <svg class="mx-auto text-gray-300 mb-4" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <p class="text-gray-500">Sé el primero en compartir una foto</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const EVENT_ID = 'boda-maria-juan-2026'; // Cambia esto para cada boda
+        let stream = null;
+        let photos = [];
+
+        // Cargar fotos al inicio
+        loadPhotos();
+
+        async function loadPhotos() {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith(`photo:${EVENT_ID}:`));
+            photos = keys.map(key => {
+                return JSON.parse(localStorage.getItem(key));
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
+            displayGallery();
+        }
+
+        function displayGallery() {
+            const gallery = document.getElementById('gallery');
+            const gallerySection = document.getElementById('gallerySection');
+            const emptyState = document.getElementById('emptyState');
+            const morePhotos = document.getElementById('morePhotos');
+
+            if (photos.length === 0) {
+                gallerySection.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            gallerySection.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            gallery.innerHTML = '';
+            const displayPhotos = photos.slice(0, 6);
+
+            displayPhotos.forEach((photo, idx) => {
+                const div = document.createElement('div');
+                div.className = 'aspect-square bg-white rounded-lg shadow overflow-hidden';
+                div.innerHTML = `<img src="${photo.image}" alt="Foto ${idx + 1}" class="w-full h-full object-cover">`;
+                gallery.appendChild(div);
+            });
+
+            if (photos.length > 6) {
+                morePhotos.style.display = 'block';
+                morePhotos.textContent = `+${photos.length - 6} fotos más en el álbum`;
+            } else {
+                morePhotos.style.display = 'none';
+            }
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                document.getElementById('cameraContainer').classList.remove('hidden');
+                document.getElementById('actionButtons').style.display = 'none';
+            } catch (error) {
+                alert('No se pudo acceder a la cámara. Usa la opción de subir archivo.');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('cameraContainer').classList.add('hidden');
+            document.getElementById('actionButtons').style.display = 'grid';
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                uploadPhoto(blob);
+            }, 'image/jpeg', 0.8);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                uploadPhoto(file);
+            }
+        }
+
+        function uploadPhoto(blob) {
+            document.getElementById('captureBtn').textContent = 'Subiendo...';
+            document.getElementById('captureBtn').disabled = true;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const photoData = {
+                    image: e.target.result,
+                    timestamp: Date.now()
+                };
+                
+                const photoKey = `photo:${EVENT_ID}:${Date.now()}`;
+                localStorage.setItem(photoKey, JSON.stringify(photoData));
+                
+                showSuccessMessage();
+                stopCamera();
+                loadPhotos();
+                
+                document.getElementById('captureBtn').textContent = 'Capturar';
+                document.getElementById('captureBtn').disabled = false;
+            };
+            reader.readAsDataURL(blob);
+        }
+
+        function showSuccessMessage() {
+            const msg = document.getElementById('successMessage');
+            msg.classList.remove('hidden');
+            setTimeout(() => {
+                msg.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
