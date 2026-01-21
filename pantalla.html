@@ -142,6 +142,16 @@
         </div>
     </div>
 
+    <!-- Botón de pantalla completa (siempre visible al inicio) -->
+    <button onclick="toggleFullscreen()" id="fullscreenBtn" class="fixed top-6 right-6 bg-pink-600 hover:bg-pink-700 text-white rounded-full p-4 shadow-lg transition-all z-40 hover:scale-110">
+        <svg id="fullscreenIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+        <svg id="exitFullscreenIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+        </svg>
+    </button>
+
     <!-- Controles (ocultos, aparecen al pasar el mouse) -->
     <div id="controls" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 opacity-0 hover:opacity-100 transition-opacity z-30">
         <button onclick="toggleAutoplay()" id="playBtn" class="text-white hover:text-pink-400 transition-colors">
@@ -207,6 +217,7 @@
         window.toggleAutoplay = toggleAutoplay;
         window.changeSpeed = changeSpeed;
         window.showPhoto = showPhoto;
+        window.toggleFullscreen = toggleFullscreen;
 
         // Escuchar fotos en tiempo real
         const photosRef = ref(database, `eventos/${EVENT_ID}/fotos`);
@@ -343,6 +354,41 @@
             }
         }
 
+        function toggleFullscreen() {
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const exitFullscreenIcon = document.getElementById('exitFullscreenIcon');
+            
+            if (!document.fullscreenElement) {
+                // Entrar en pantalla completa
+                document.documentElement.requestFullscreen().then(() => {
+                    fullscreenIcon.classList.add('hidden');
+                    exitFullscreenIcon.classList.remove('hidden');
+                }).catch(err => {
+                    alert('No se pudo activar pantalla completa: ' + err.message);
+                });
+            } else {
+                // Salir de pantalla completa
+                document.exitFullscreen().then(() => {
+                    fullscreenIcon.classList.remove('hidden');
+                    exitFullscreenIcon.classList.add('hidden');
+                });
+            }
+        }
+
+        // Detectar cambios de pantalla completa (por ejemplo, al presionar ESC)
+        document.addEventListener('fullscreenchange', () => {
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const exitFullscreenIcon = document.getElementById('exitFullscreenIcon');
+            
+            if (!document.fullscreenElement) {
+                fullscreenIcon.classList.remove('hidden');
+                exitFullscreenIcon.classList.add('hidden');
+            } else {
+                fullscreenIcon.classList.add('hidden');
+                exitFullscreenIcon.classList.remove('hidden');
+            }
+        });
+
         // Iniciar autoplay
         setTimeout(() => {
             if (photos.length > 0) {
@@ -357,6 +403,9 @@
             if (e.key === ' ') {
                 e.preventDefault();
                 toggleAutoplay();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
             }
         });
     </script>
