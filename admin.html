@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Álbum de Boda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <!-- Header -->
+    <div class="bg-black bg-opacity-30 backdrop-blur-sm border-b border-white border-opacity-10">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <svg class="text-pink-400" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <h1 class="text-2xl font-serif text-white" id="coupleNames">María & Juan</h1>
+                    </div>
+                    <p class="text-gray-300 text-sm"><span id="weddingDate">21 Enero 2026</span> - Panel de Administración</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-500 text-white">
+                        <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        <span id="autoRefreshText">Auto-actualizar</span>
+                    </button>
+                    
+                    <button onclick="loadPhotos()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
+                        Actualizar
+                    </button>
+                    
+                    <button onclick="downloadAll()" id="downloadAllBtn" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors hidden">
+                        <div class="flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Descargar Todas
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-white border-opacity-20">
+                <p class="text-gray-300 text-sm mb-1">Total de Fotos</p>
+                <p class="text-4xl font-bold text-white" id="totalPhotos">0</p>
+            </div>
+            
+            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-white border-opacity-20">
+                <p class="text-gray-300 text-sm mb-1">Última Foto</p>
+                <p class="text-2xl font-bold text-white" id="lastPhotoTime">--:--</p>
+            </div>
+            
+            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-white border-opacity-20">
+                <p class="text-gray-300 text-sm mb-1">Vista</p>
+                <div class="flex gap-2 mt-2">
+                    <button onclick="setViewMode('grid')" id="gridBtn" class="px-3 py-1 rounded bg-purple-600 text-white">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </button>
+                    <button onclick="setViewMode('list')" id="listBtn" class="px-3 py-1 rounded bg-white bg-opacity-20 text-gray-300">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-12">
+            <svg class="mx-auto text-purple-400 mb-4 animate-spin" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            <p class="text-gray-300">Cargando fotos...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-12 hidden">
+            <svg class="mx-auto text-gray-500 mb-4" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <p class="text-gray-400 text-lg">Esperando las primeras fotos...</p>
+            <p class="text-gray-500 text-sm mt-2">Las fotos aparecerán aquí en tiempo real</p>
+        </div>
+
+        <!-- Galería -->
+        <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </div>
+
+    <script>
+        // Configuración
+        const EVENT_ID = 'boda-maria-juan-2026'; // Debe coincidir con invitados.html
+        let photos = [];
+        let autoRefresh = true;
+        let viewMode = 'grid';
+        let refreshInterval = null;
+
+        // Cargar fotos al inicio
+        loadPhotos();
+        startAutoRefresh();
+
+        function loadPhotos() {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith(`photo:${EVENT_ID}:`));
+            photos = keys.map(key => {
+                return {
+                    ...JSON.parse(localStorage.getItem(key)),
+                    key: key
+                };
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
+            updateStats();
+            displayGallery();
+        }
+
+        function updateStats() {
+            document.getElementById('totalPhotos').textContent = photos.length;
+            
+            if (photos.length > 0) {
+                const lastTime = new Date(photos[0].timestamp);
+                document.getElementById('lastPhotoTime').textContent = 
+                    lastTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('downloadAllBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('lastPhotoTime').textContent = '--:--';
+                document.getElementById('downloadAllBtn').classList.add('hidden');
+            }
+        }
+
+        function displayGallery() {
+            const gallery = document.getElementById('gallery');
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('emptyState');
+
+            loading.classList.add('hidden');
+
+            if (photos.length === 0) {
+                emptyState.classList.remove('hidden');
+                gallery.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            gallery.innerHTML = '';
+            
+            if (viewMode === 'grid') {
+                gallery.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+            } else {
+                gallery.className = 'space-y-4';
+            }
+
+            photos.forEach((photo, idx) => {
+                const div = document.createElement('div');
+                
+                if (viewMode === 'grid') {
+                    div.className = 'bg-white bg-opacity-10 backdrop-blur-sm rounded-lg overflow-hidden border border-white border-opacity-20 hover:border-purple-400 transition-all group';
+                    div.innerHTML = `
+                        <div class="aspect-square">
+                            <img src="${photo.image}" alt="Foto ${idx + 1}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3">
+                            <p class="text-white text-sm font-medium mb-1">Foto #${photos.length - idx}</p>
+                            <p class="text-gray-400 text-xs">${formatTime(photo.timestamp)}</p>
+                            <div class="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="downloadPhoto(${idx})" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded py-2 text-sm font-medium transition-colors">
+                                    Descargar
+                                </button>
+                                <button onclick="deletePhoto('${photo.key}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    div.className = 'bg-white bg-opacity-10 backdrop-blur-sm rounded-lg overflow-hidden border border-white border-opacity-20 hover:border-purple-400 transition-all flex gap-4';
+                    div.innerHTML = `
+                        <div class="w-48 h-48 flex-shrink-0">
+                            <img src="${photo.image}" alt="Foto ${idx + 1}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <div>
+                                <p class="text-white text-sm font-medium mb-1">Foto #${photos.length - idx}</p>
+                                <p class="text-gray-400 text-xs">${formatTime(photo.timestamp)}</p>
+                            </div>
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="downloadPhoto(${idx})" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded py-2 text-sm font-medium transition-colors">
+                                    Descargar
+                                </button>
+                                <button onclick="deletePhoto('${photo.key}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                gallery.appendChild(div);
+            });
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function downloadPhoto(idx) {
+            const photo = photos[idx];
+            const link = document.createElement('a');
+            link.href = photo.image;
+            link.download = `boda-foto-${photos.length - idx}.jpg`;
+            link.click();
+        }
+
+        function downloadAll() {
+            photos.forEach((photo, idx) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = photo.image;
+                    link.download = `boda-foto-${photos.length - idx}.jpg`;
+                    link.click();
+                }, idx * 300);
+            });
+        }
+
+        function deletePhoto(key) {
+            if (confirm('¿Eliminar esta foto?')) {
+                localStorage.removeItem(key);
+                loadPhotos();
+            }
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const btn = document.getElementById('autoRefreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            const text = document.getElementById('autoRefreshText');
+            
+            if (autoRefresh) {
+                btn.className = 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-500 text-white';
+                icon.classList.add('animate-spin');
+                text.textContent = 'Auto-actualizar';
+                startAutoRefresh();
+            } else {
+                btn.className = 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-gray-700 text-gray-300';
+                icon.classList.remove('animate-spin');
+                text.textContent = 'Pausado';
+                stopAutoRefresh();
+            }
+        }
+
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(loadPhotos, 3000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            const gridBtn = document.getElementById('gridBtn');
+            const listBtn = document.getElementById('listBtn');
+            
+            if (mode === 'grid') {
+                gridBtn.className = 'px-3 py-1 rounded bg-purple-600 text-white';
+                listBtn.className = 'px-3 py-1 rounded bg-white bg-opacity-20 text-gray-300';
+            } else {
+                gridBtn.className = 'px-3 py-1 rounded bg-white bg-opacity-20 text-gray-300';
+                listBtn.className = 'px-3 py-1 rounded bg-purple-600 text-white';
+            }
+            
+            displayGallery();
+        }
+    </script>
+</body>
+</html>
