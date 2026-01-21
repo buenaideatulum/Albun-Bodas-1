@@ -11,24 +11,23 @@
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50">
-    <!-- Header -->
+    <!-- Header compacto -->
     <div class="bg-white shadow-sm border-b border-pink-100">
-        <div class="max-w-4xl mx-auto px-4 py-6 text-center">
-            <div class="flex items-center justify-center gap-2 mb-2">
-                <svg class="text-pink-500" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <div class="max-w-4xl mx-auto px-4 py-3 text-center">
+            <div class="flex items-center justify-center gap-2 mb-1">
+                <svg class="text-pink-500" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-                <h1 class="text-3xl font-serif text-gray-800" id="coupleNames">María & Juan</h1>
-                <svg class="text-pink-500" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <h1 class="text-xl font-serif text-gray-800" id="coupleNames">María & Juan</h1>
+                <svg class="text-pink-500" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
             </div>
-            <p class="text-gray-600" id="weddingDate">21 Enero 2026</p>
-            <p class="text-sm text-gray-500 mt-2">Comparte tus mejores momentos con nosotros</p>
+            <p class="text-sm text-gray-600" id="weddingDate">21 Enero 2026</p>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto px-4 py-4">
         <!-- Mensaje de éxito -->
         <div id="successMessage" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 hidden">
             <div class="flex items-center gap-3">
@@ -39,30 +38,30 @@
             </div>
         </div>
 
-        <!-- Botones de acción -->
-        <div id="actionButtons" class="grid grid-cols-2 gap-4 mb-8">
-            <button onclick="startCamera()" class="bg-pink-500 hover:bg-pink-600 text-white rounded-lg p-6 flex flex-col items-center gap-3 transition-colors shadow-md">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Botones de acción - más grandes y visibles -->
+        <div id="actionButtons" class="grid grid-cols-2 gap-4 mb-6">
+            <button onclick="startCamera()" class="bg-pink-500 hover:bg-pink-600 text-white rounded-xl p-8 flex flex-col items-center gap-3 transition-colors shadow-lg active:scale-95">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                     <circle cx="12" cy="13" r="4"/>
                 </svg>
-                <span class="font-medium">Tomar Foto</span>
+                <span class="font-bold text-lg">Tomar Foto</span>
             </button>
             
-            <button onclick="document.getElementById('fileInput').click()" class="bg-rose-500 hover:bg-rose-600 text-white rounded-lg p-6 flex flex-col items-center gap-3 transition-colors shadow-md">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button onclick="document.getElementById('fileInput').click()" class="bg-rose-500 hover:bg-rose-600 text-white rounded-xl p-8 flex flex-col items-center gap-3 transition-colors shadow-lg active:scale-95">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
                     <line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
-                <span class="font-medium">Subir Foto</span>
+                <span class="font-bold text-lg">Subir Foto</span>
             </button>
         </div>
 
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
 
         <!-- Cámara -->
-        <div id="cameraContainer" class="mb-8 bg-white rounded-lg shadow-lg overflow-hidden hidden">
+        <div id="cameraContainer" class="mb-6 bg-white rounded-lg shadow-lg overflow-hidden hidden">
             <video id="video" autoplay playsinline class="w-full"></video>
             <div class="p-4 flex gap-3">
                 <button onclick="capturePhoto()" id="captureBtn" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg py-3 font-medium transition-colors">
