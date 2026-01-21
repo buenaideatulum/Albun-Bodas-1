@@ -25,24 +25,20 @@
                         <svg class="text-pink-400" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
-                        <h1 class="text-2xl font-serif text-white" id="coupleNames">María & Juan</h1>
+                        <h1 class="text-2xl font-serif text-white">María & Juan</h1>
                     </div>
-                    <p class="text-gray-300 text-sm"><span id="weddingDate">21 Enero 2026</span> - Panel de Administración</p>
+                    <p class="text-gray-300 text-sm">21 Enero 2026 - Panel de Administración</p>
                 </div>
                 
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-500 text-white">
-                        <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <div class="px-4 py-2 rounded-lg font-medium bg-green-500 text-white flex items-center gap-2">
+                        <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="23 4 23 10 17 10"/>
                             <polyline points="1 20 1 14 7 14"/>
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                         </svg>
-                        <span id="autoRefreshText">Auto-actualizar</span>
-                    </button>
-                    
-                    <button onclick="loadPhotos()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
-                        Actualizar
-                    </button>
+                        <span>Tiempo Real</span>
+                    </div>
                     
                     <button onclick="downloadAll()" id="downloadAllBtn" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors hidden">
                         <div class="flex items-center gap-2">
@@ -104,7 +100,7 @@
                 <polyline points="1 20 1 14 7 14"/>
                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
             </svg>
-            <p class="text-gray-300">Cargando fotos...</p>
+            <p class="text-gray-300">Conectando con Firebase...</p>
         </div>
 
         <!-- Empty State -->
@@ -120,32 +116,52 @@
         <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
     </div>
 
-    <script>
-        // Configuración
-        const EVENT_ID = 'boda-maria-juan-2026'; // Debe coincidir con invitados.html
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, query, orderByChild, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaSaOCG7z2FpqMxjvV0eiXuNjv7zNAtFE",
+            authDomain: "album-boda-1.firebaseapp.com",
+            projectId: "album-boda-1",
+            storageBucket: "album-boda-1.firebasestorage.app",
+            messagingSenderId: "985431914188",
+            appId: "1:985431914188:web:a37ec500b2496537d0b469",
+            measurementId: "G-QGBYQPDJQ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const EVENT_ID = 'boda-maria-juan-2026';
+        
         let photos = [];
-        let autoRefresh = true;
         let viewMode = 'grid';
-        let refreshInterval = null;
 
-        // Cargar fotos al inicio
-        loadPhotos();
-        startAutoRefresh();
+        window.setViewMode = setViewMode;
+        window.downloadPhoto = downloadPhoto;
+        window.downloadAll = downloadAll;
+        window.deletePhoto = deletePhoto;
 
-        function loadPhotos() {
-            const keys = Object.keys(localStorage).filter(key => key.startsWith(`photo:${EVENT_ID}:`));
-            photos = keys.map(key => {
-                return {
-                    ...JSON.parse(localStorage.getItem(key)),
-                    key: key
-                };
-            }).sort((a, b) => b.timestamp - a.timestamp);
-
+        // Escuchar cambios en tiempo real
+        const photosRef = ref(database, `eventos/${EVENT_ID}/fotos`);
+        const photosQuery = query(photosRef, orderByChild('timestamp'));
+        
+        onValue(photosQuery, (snapshot) => {
+            photos = [];
+            snapshot.forEach((childSnapshot) => {
+                photos.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+            photos.sort((a, b) => b.timestamp - a.timestamp);
             updateStats();
             displayGallery();
-        }
+        });
 
         function updateStats() {
+            document.getElementById('loading').classList.add('hidden');
             document.getElementById('totalPhotos').textContent = photos.length;
             
             if (photos.length > 0) {
@@ -161,10 +177,7 @@
 
         function displayGallery() {
             const gallery = document.getElementById('gallery');
-            const loading = document.getElementById('loading');
             const emptyState = document.getElementById('emptyState');
-
-            loading.classList.add('hidden');
 
             if (photos.length === 0) {
                 emptyState.classList.remove('hidden');
@@ -197,7 +210,7 @@
                                 <button onclick="downloadPhoto(${idx})" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded py-2 text-sm font-medium transition-colors">
                                     Descargar
                                 </button>
-                                <button onclick="deletePhoto('${photo.key}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                <button onclick="deletePhoto('${photo.id}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
                                     ✕
                                 </button>
                             </div>
@@ -218,7 +231,7 @@
                                 <button onclick="downloadPhoto(${idx})" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded py-2 text-sm font-medium transition-colors">
                                     Descargar
                                 </button>
-                                <button onclick="deletePhoto('${photo.key}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                                <button onclick="deletePhoto('${photo.id}')" class="px-3 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
                                     ✕
                                 </button>
                             </div>
@@ -244,51 +257,26 @@
         }
 
         function downloadAll() {
-            photos.forEach((photo, idx) => {
-                setTimeout(() => {
-                    const link = document.createElement('a');
-                    link.href = photo.image;
-                    link.download = `boda-foto-${photos.length - idx}.jpg`;
-                    link.click();
-                }, idx * 300);
-            });
+            if (confirm(`¿Descargar todas las ${photos.length} fotos?`)) {
+                photos.forEach((photo, idx) => {
+                    setTimeout(() => {
+                        const link = document.createElement('a');
+                        link.href = photo.image;
+                        link.download = `boda-foto-${photos.length - idx}.jpg`;
+                        link.click();
+                    }, idx * 300);
+                });
+            }
         }
 
-        function deletePhoto(key) {
+        async function deletePhoto(photoId) {
             if (confirm('¿Eliminar esta foto?')) {
-                localStorage.removeItem(key);
-                loadPhotos();
-            }
-        }
-
-        function toggleAutoRefresh() {
-            autoRefresh = !autoRefresh;
-            const btn = document.getElementById('autoRefreshBtn');
-            const icon = document.getElementById('refreshIcon');
-            const text = document.getElementById('autoRefreshText');
-            
-            if (autoRefresh) {
-                btn.className = 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-500 text-white';
-                icon.classList.add('animate-spin');
-                text.textContent = 'Auto-actualizar';
-                startAutoRefresh();
-            } else {
-                btn.className = 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-gray-700 text-gray-300';
-                icon.classList.remove('animate-spin');
-                text.textContent = 'Pausado';
-                stopAutoRefresh();
-            }
-        }
-
-        function startAutoRefresh() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(loadPhotos, 3000);
-        }
-
-        function stopAutoRefresh() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-                refreshInterval = null;
+                try {
+                    await remove(ref(database, `eventos/${EVENT_ID}/fotos/${photoId}`));
+                } catch (error) {
+                    alert('Error al eliminar la foto');
+                    console.error(error);
+                }
             }
         }
 
