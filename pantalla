@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Boda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Dancing+Script:wght@700&display=swap');
+        
+        body {
+            overflow: hidden;
+        }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-script { font-family: 'Dancing Script', cursive; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .photo-enter {
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .thumbnail-enter {
+            animation: slideInFromRight 0.5s ease-out;
+        }
+        
+        .heart-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .photo-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .photo-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .photo-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        @keyframes kenburns {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.1) translate(-2%, -2%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+        
+        .kenburns {
+            animation: kenburns 20s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <!-- Overlay decorativo -->
+    <div class="fixed inset-0 pointer-events-none z-10">
+        <div class="absolute top-8 left-8">
+            <svg class="text-pink-400 opacity-20 heart-float" width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+        </div>
+        <div class="absolute top-8 right-8" style="animation-delay: 1s;">
+            <svg class="text-pink-400 opacity-20 heart-float" width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="h-screen flex">
+        <!-- Foto principal (70%) -->
+        <div class="flex-1 relative bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+            <!-- Header flotante -->
+            <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-8 z-20">
+                <div class="text-center">
+                    <h1 class="text-5xl font-script text-white mb-2" id="coupleNames">María & Juan</h1>
+                    <p class="text-white text-lg font-serif" id="weddingDate">21 Enero 2026</p>
+                </div>
+            </div>
+
+            <!-- Foto principal -->
+            <div id="mainPhotoContainer" class="w-full h-full flex items-center justify-center p-12">
+                <div id="emptyState" class="text-center">
+                    <svg class="mx-auto text-gray-600 mb-4" width="80" height="80" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <p class="text-gray-500 text-2xl font-serif">Esperando momentos mágicos...</p>
+                </div>
+                <img id="mainPhoto" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl hidden kenburns" alt="Foto principal">
+            </div>
+
+            <!-- Footer con contador -->
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-20">
+                <div class="flex items-center justify-between text-white">
+                    <div class="flex items-center gap-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        <span id="photoCounter" class="text-lg font-medium">0 fotos</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-300">Actualizando en vivo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel lateral con miniaturas (30%) -->
+        <div class="w-1/3 bg-gradient-to-b from-slate-900 to-black border-l border-white/10 overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-white text-xl font-serif mb-4 text-center">Galería</h2>
+                <div id="thumbnailGrid" class="photo-grid"></div>
+                
+                <div id="emptyThumbnails" class="text-center py-12">
+                    <p class="text-gray-600 text-sm">Las fotos aparecerán aquí</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controles (ocultos, aparecen al pasar el mouse) -->
+    <div id="controls" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 opacity-0 hover:opacity-100 transition-opacity z-30">
+        <button onclick="toggleAutoplay()" id="playBtn" class="text-white hover:text-pink-400 transition-colors">
+            <svg id="playIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <svg id="pauseIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="hidden">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+        </button>
+        
+        <button onclick="previousPhoto()" class="text-white hover:text-pink-400 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+        
+        <span class="text-white text-sm" id="currentIndex">1 / 1</span>
+        
+        <button onclick="nextPhoto()" class="text-white hover:text-pink-400 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+        
+        <div class="border-l border-white/30 h-6 mx-2"></div>
+        
+        <select onchange="changeSpeed(this.value)" class="bg-white/10 text-white text-sm rounded px-2 py-1 border border-white/20">
+            <option value="3000">Rápido (3s)</option>
+            <option value="5000" selected>Normal (5s)</option>
+            <option value="8000">Lento (8s)</option>
+        </select>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaSaOCG7z2FpqMxjvV0eiXuNjv7zNAtFE",
+            authDomain: "album-boda-1.firebaseapp.com",
+            projectId: "album-boda-1",
+            storageBucket: "album-boda-1.firebasestorage.app",
+            messagingSenderId: "985431914188",
+            appId: "1:985431914188:web:a37ec500b2496537d0b469",
+            measurementId: "G-QGBYQPDJQ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const EVENT_ID = 'boda-maria-juan-2026';
+        
+        let photos = [];
+        let currentIndex = 0;
+        let autoplayInterval = null;
+        let autoplaySpeed = 5000;
+        let isPlaying = true;
+
+        window.nextPhoto = nextPhoto;
+        window.previousPhoto = previousPhoto;
+        window.toggleAutoplay = toggleAutoplay;
+        window.changeSpeed = changeSpeed;
+        window.showPhoto = showPhoto;
+
+        // Escuchar fotos en tiempo real
+        const photosRef = ref(database, `eventos/${EVENT_ID}/fotos`);
+        const photosQuery = query(photosRef, orderByChild('timestamp'));
+        
+        onValue(photosQuery, (snapshot) => {
+            const oldLength = photos.length;
+            photos = [];
+            snapshot.forEach((childSnapshot) => {
+                photos.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+            photos.sort((a, b) => b.timestamp - a.timestamp);
+            
+            updateGallery();
+            
+            // Si es una foto nueva, mostrarla
+            if (photos.length > oldLength && photos.length > 0) {
+                currentIndex = 0;
+                displayCurrentPhoto();
+            } else if (photos.length > 0 && currentIndex >= photos.length) {
+                currentIndex = photos.length - 1;
+                displayCurrentPhoto();
+            } else if (photos.length > 0) {
+                displayCurrentPhoto();
+            }
+        });
+
+        function updateGallery() {
+            const grid = document.getElementById('thumbnailGrid');
+            const emptyThumbs = document.getElementById('emptyThumbnails');
+            const counter = document.getElementById('photoCounter');
+            
+            counter.textContent = `${photos.length} foto${photos.length !== 1 ? 's' : ''}`;
+            
+            if (photos.length === 0) {
+                emptyThumbs.classList.remove('hidden');
+                grid.innerHTML = '';
+                return;
+            }
+            
+            emptyThumbs.classList.add('hidden');
+            grid.innerHTML = '';
+            
+            photos.forEach((photo, idx) => {
+                const div = document.createElement('div');
+                div.className = 'aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-pink-400 transition-all thumbnail-enter';
+                div.onclick = () => showPhoto(idx);
+                div.innerHTML = `<img src="${photo.image}" class="w-full h-full object-cover" alt="Foto ${idx + 1}">`;
+                grid.appendChild(div);
+            });
+        }
+
+        function displayCurrentPhoto() {
+            if (photos.length === 0) return;
+            
+            const mainPhoto = document.getElementById('mainPhoto');
+            const emptyState = document.getElementById('emptyState');
+            const currentIndexEl = document.getElementById('currentIndex');
+            
+            emptyState.classList.add('hidden');
+            mainPhoto.classList.remove('hidden');
+            
+            // Reiniciar animación
+            mainPhoto.style.animation = 'none';
+            setTimeout(() => {
+                mainPhoto.style.animation = '';
+            }, 10);
+            
+            mainPhoto.src = photos[currentIndex].image;
+            mainPhoto.classList.add('photo-enter');
+            
+            currentIndexEl.textContent = `${currentIndex + 1} / ${photos.length}`;
+            
+            setTimeout(() => {
+                mainPhoto.classList.remove('photo-enter');
+            }, 1000);
+        }
+
+        function nextPhoto() {
+            if (photos.length === 0) return;
+            currentIndex = (currentIndex + 1) % photos.length;
+            displayCurrentPhoto();
+        }
+
+        function previousPhoto() {
+            if (photos.length === 0) return;
+            currentIndex = currentIndex === 0 ? photos.length - 1 : currentIndex - 1;
+            displayCurrentPhoto();
+        }
+
+        function showPhoto(index) {
+            currentIndex = index;
+            displayCurrentPhoto();
+            if (!isPlaying) {
+                toggleAutoplay();
+            }
+        }
+
+        function toggleAutoplay() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            
+            if (isPlaying) {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                startAutoplay();
+            } else {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                stopAutoplay();
+            }
+        }
+
+        function startAutoplay() {
+            if (autoplayInterval) clearInterval(autoplayInterval);
+            autoplayInterval = setInterval(nextPhoto, autoplaySpeed);
+        }
+
+        function stopAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+                autoplayInterval = null;
+            }
+        }
+
+        function changeSpeed(speed) {
+            autoplaySpeed = parseInt(speed);
+            if (isPlaying) {
+                startAutoplay();
+            }
+        }
+
+        // Iniciar autoplay
+        setTimeout(() => {
+            if (photos.length > 0) {
+                startAutoplay();
+            }
+        }, 1000);
+
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPhoto();
+            if (e.key === 'ArrowLeft') previousPhoto();
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoplay();
+            }
+        });
+    </script>
+</body>
+</html>
