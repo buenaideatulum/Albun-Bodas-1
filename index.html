@@ -92,23 +92,48 @@
         </div>
     </div>
 
-    <script>
-        // Configuración
-        const EVENT_ID = 'boda-maria-juan-2026'; // Cambia esto para cada boda
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaSaOCG7z2FpqMxjvV0eiXuNjv7zNAtFE",
+            authDomain: "album-boda-1.firebaseapp.com",
+            projectId: "album-boda-1",
+            storageBucket: "album-boda-1.firebasestorage.app",
+            messagingSenderId: "985431914188",
+            appId: "1:985431914188:web:a37ec500b2496537d0b469",
+            measurementId: "G-QGBYQPDJQ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const EVENT_ID = 'boda-maria-juan-2026';
+        
         let stream = null;
         let photos = [];
 
-        // Cargar fotos al inicio
-        loadPhotos();
+        window.startCamera = startCamera;
+        window.stopCamera = stopCamera;
+        window.capturePhoto = capturePhoto;
+        window.handleFileSelect = handleFileSelect;
 
-        async function loadPhotos() {
-            const keys = Object.keys(localStorage).filter(key => key.startsWith(`photo:${EVENT_ID}:`));
-            photos = keys.map(key => {
-                return JSON.parse(localStorage.getItem(key));
-            }).sort((a, b) => b.timestamp - a.timestamp);
-
+        // Cargar fotos en tiempo real
+        const photosRef = ref(database, `eventos/${EVENT_ID}/fotos`);
+        const recentPhotosQuery = query(photosRef, orderByChild('timestamp'), limitToLast(50));
+        
+        onValue(recentPhotosQuery, (snapshot) => {
+            photos = [];
+            snapshot.forEach((childSnapshot) => {
+                photos.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+            photos.sort((a, b) => b.timestamp - a.timestamp);
             displayGallery();
-        }
+        });
 
         function displayGallery() {
             const gallery = document.getElementById('gallery');
@@ -180,7 +205,7 @@
             
             canvas.toBlob((blob) => {
                 uploadPhoto(blob);
-            }, 'image/jpeg', 0.8);
+            }, 'image/jpeg', 0.7);
         }
 
         function handleFileSelect(event) {
@@ -195,21 +220,24 @@
             document.getElementById('captureBtn').disabled = true;
             
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const photoData = {
-                    image: e.target.result,
-                    timestamp: Date.now()
-                };
-                
-                const photoKey = `photo:${EVENT_ID}:${Date.now()}`;
-                localStorage.setItem(photoKey, JSON.stringify(photoData));
-                
-                showSuccessMessage();
-                stopCamera();
-                loadPhotos();
-                
-                document.getElementById('captureBtn').textContent = 'Capturar';
-                document.getElementById('captureBtn').disabled = false;
+            reader.onload = async (e) => {
+                try {
+                    const photoData = {
+                        image: e.target.result,
+                        timestamp: Date.now()
+                    };
+                    
+                    await push(ref(database, `eventos/${EVENT_ID}/fotos`), photoData);
+                    
+                    showSuccessMessage();
+                    stopCamera();
+                } catch (error) {
+                    alert('Error al subir la foto. Intenta de nuevo.');
+                    console.error(error);
+                } finally {
+                    document.getElementById('captureBtn').textContent = 'Capturar';
+                    document.getElementById('captureBtn').disabled = false;
+                }
             };
             reader.readAsDataURL(blob);
         }
