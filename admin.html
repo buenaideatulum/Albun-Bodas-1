@@ -30,7 +30,7 @@
                     <p class="text-gray-300 text-sm">21 Enero 2026 - Panel de Administración</p>
                 </div>
                 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     <div class="px-4 py-2 rounded-lg font-medium bg-green-500 text-white flex items-center gap-2">
                         <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="23 4 23 10 17 10"/>
@@ -40,14 +40,14 @@
                         <span>Tiempo Real</span>
                     </div>
                     
-                    <button onclick="downloadAll()" id="downloadAllBtn" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors hidden">
+                    <button onclick="downloadAll()" id="downloadAllBtn" class="px-6 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg font-bold transition-all shadow-lg hidden transform hover:scale-105">
                         <div class="flex items-center gap-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Descargar Todas
+                            <span>DESCARGAR TODAS</span>
                         </div>
                     </button>
                 </div>
@@ -257,16 +257,64 @@
         }
 
         function downloadAll() {
-            if (confirm(`¿Descargar todas las ${photos.length} fotos?`)) {
-                photos.forEach((photo, idx) => {
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = photo.image;
-                        link.download = `boda-foto-${photos.length - idx}.jpg`;
-                        link.click();
-                    }, idx * 300);
-                });
+            const totalPhotos = photos.length;
+            if (totalPhotos === 0) {
+                alert('No hay fotos para descargar');
+                return;
             }
+            
+            if (!confirm(`¿Descargar todas las ${totalPhotos} fotos?\n\nSe descargarán una por una. Este proceso puede tardar un momento.`)) {
+                return;
+            }
+            
+            const btn = document.getElementById('downloadAllBtn');
+            const originalText = btn.innerHTML;
+            let downloaded = 0;
+            
+            // Deshabilitar botón durante descarga
+            btn.disabled = true;
+            btn.className = btn.className.replace('hover:from-pink-700 hover:to-rose-700', '');
+            
+            photos.forEach((photo, idx) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = photo.image;
+                    link.download = `boda-foto-${String(photos.length - idx).padStart(3, '0')}.jpg`;
+                    link.click();
+                    
+                    downloaded++;
+                    btn.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <polyline points="1 20 1 14 7 14"/>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            </svg>
+                            <span>Descargando ${downloaded}/${totalPhotos}</span>
+                        </div>
+                    `;
+                    
+                    // Cuando termine
+                    if (downloaded === totalPhotos) {
+                        setTimeout(() => {
+                            btn.innerHTML = `
+                                <div class="flex items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    <span>¡${totalPhotos} fotos descargadas!</span>
+                                </div>
+                            `;
+                            
+                            setTimeout(() => {
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                                btn.className = btn.className + ' hover:from-pink-700 hover:to-rose-700';
+                            }, 3000);
+                        }, 500);
+                    }
+                }, idx * 400); // 400ms entre cada descarga para evitar problemas
+            });
         }
 
         async function deletePhoto(photoId) {
